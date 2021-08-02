@@ -1,8 +1,11 @@
 import React from "react";
 import { ActivityIndicator, Dimensions, TouchableOpacity } from "react-native";
-import { Camera, Permissions } from "expo";
+import * as Permissions from "expo-permissions";
+import {Camera} from 'expo-camera'
+import * as MediaLibrary from 'expo-media-library'
 import styled from "styled-components";
 import { MaterialIcons } from "@expo/vector-icons";
+import * as FaceDetector from "expo-face-detector";
 
 const { width, height } = Dimensions.get("window");
 
