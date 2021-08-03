@@ -7,6 +7,7 @@ import styled from "styled-components";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as FaceDetector from "expo-face-detector";
 
+
 const { width, height } = Dimensions.get("window");
 
 const CenterView = styled.View`
@@ -19,15 +20,14 @@ const Text = styled.Text`
   color: white;
   font-size: 22px;
 `;
-
 const IconBar = styled.View`
   margin-top: 50px;
 `;
-
 export default class App extends React.Component {
   state = {
     hasPermission: null,
-    cameraType: Camera.Constants.Type.front
+    cameraType: Camera.Constants.Type.front,
+    smileDetected: false
   };
   componentDidMount = async () => {
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
@@ -38,7 +38,7 @@ export default class App extends React.Component {
     }
   };
   render() {
-    const { hasPermission, cameraType } = this.state;
+    const { hasPermission, cameraType, smileDetected } = this.state;
     if (hasPermission === true) {
       return (
         <CenterView>
@@ -50,6 +50,11 @@ export default class App extends React.Component {
               overflow: "hidden"
             }}
             type={cameraType}
+            onFacesDetected={smileDetected ? null : this.onFacesDetected}
+            faceDetectorSettings={{
+              detectLandmarks: FaceDetector.Constants.Landmarks.all,
+              runClassifications: FaceDetector.Constants.Classifications.all
+            }}
           />
           <IconBar>
             <TouchableOpacity onPress={this.switchCameraType}>
@@ -90,6 +95,17 @@ export default class App extends React.Component {
       this.setState({
         cameraType: Camera.Constants.Type.front
       });
+    }
+  };
+  onFacesDetected = ({ faces }) => {
+    const face = faces[0];
+    if (face) {
+      if (face.smilingProbability > 0.7) {
+        this.setState({
+          smileDetected: true
+        });
+        console.log("take photo");
+      }
     }
   };
 }
