@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator, Dimensions, TouchableOpacity } from "react-native";
+import { ActivityIndicator, Dimensions, TouchableOpacity, Platform } from "react-native";
 import * as Permissions from "expo-permissions";
 import {Camera} from 'expo-camera'
 import * as MediaLibrary from 'expo-media-library'
@@ -10,6 +10,9 @@ import * as FileSystem from "expo-file-system"
 
 
 const { width, height } = Dimensions.get("window");
+
+const ALBUM_NAME = "Smiley Cam";
+
 const CenterView = styled.View`
   flex: 1;
   justify-content: center;
@@ -23,9 +26,7 @@ const Text = styled.Text`
 const IconBar = styled.View`
   margin-top: 50px;
 `;
-
 export default class App extends React.Component {
- 
   constructor(props) {
     super(props);
     this.state = {
@@ -35,7 +36,6 @@ export default class App extends React.Component {
     };
     this.cameraRef = React.createRef();
   }
-
   componentDidMount = async () => {
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
     if (status === "granted") {
@@ -64,7 +64,6 @@ export default class App extends React.Component {
             }}
             ref={this.cameraRef}
           />
-
           <IconBar>
             <TouchableOpacity onPress={this.switchCameraType}>
               <MaterialIcons
@@ -134,5 +133,24 @@ export default class App extends React.Component {
       });
     }
   };
-  savePhoto = async uri => {};
+  savePhoto = async uri => {
+    try {
+      const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+      if (status === "granted") {
+        // const asset = await MediaLibrary.createAssetAsync(uri);
+        let album = await MediaLibrary.getAlbumAsync(ALBUM_NAME);
+        if (album === null) {
+          album = await MediaLibrary.createAlbumAsync(
+            ALBUM_NAME,
+            Platform.OS !== "iOS" ? asset : null
+          );
+        } else {
+        }
+      } else {
+        this.setState({ hasPermission: false });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 }
