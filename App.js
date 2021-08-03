@@ -10,9 +10,7 @@ import * as FileSystem from "expo-file-system"
 
 
 const { width, height } = Dimensions.get("window");
-
 const ALBUM_NAME = "Smiley Cam";
-
 const CenterView = styled.View`
   flex: 1;
   justify-content: center;
@@ -49,6 +47,7 @@ export default class App extends React.Component {
     if (hasPermission === true) {
       return (
         <CenterView>
+          <Text>Smile to take photo</Text>
           <Camera
             style={{
               width: width - 40,
@@ -64,6 +63,7 @@ export default class App extends React.Component {
             }}
             ref={this.cameraRef}
           />
+
           <IconBar>
             <TouchableOpacity onPress={this.switchCameraType}>
               <MaterialIcons
@@ -137,15 +137,20 @@ export default class App extends React.Component {
     try {
       const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
       if (status === "granted") {
-        // const asset = await MediaLibrary.createAssetAsync(uri);
+        const asset = await MediaLibrary.createAssetAsync(uri);
         let album = await MediaLibrary.getAlbumAsync(ALBUM_NAME);
         if (album === null) {
-          album = await MediaLibrary.createAlbumAsync(
-            ALBUM_NAME,
-            Platform.OS !== "iOS" ? asset : null
-          );
+          album = await MediaLibrary.createAlbumAsync(ALBUM_NAME, asset);
         } else {
+          await MediaLibrary.addAssetsToAlbumAsync([asset], album.id);
         }
+        setTimeout(
+          () =>
+            this.setState({
+              smileDetected: false
+            }),
+          2000
+        );
       } else {
         this.setState({ hasPermission: false });
       }
